@@ -1,0 +1,43 @@
+main(){
+    vector<string> his = readHist();
+    string line;
+    
+    while(1){
+        cout << pwd() << :~$
+        getline(cin, line);
+        history.push_back(line);
+
+        if(line == "history")
+            printHistory(history);
+        else if (line == "pwd")
+            cout << pwd;
+        else if (line == "exit") break();
+    }
+}
+
+string pwd(){
+    return ""
+
+}
+
+needs to support:
+    pwd
+    exit
+    history
+    ls
+    ls -l
+    ./---
+    java ---
+
+    Option: {
+        |
+        OR
+        >
+        OR
+        <
+    }
+
+    extra points for more functions
+        extra for multiple pipes
+
+        
