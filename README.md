@@ -6,9 +6,7 @@ Possible Grade: 30 Points
 
 **Expected Materials to submit** Source code files.
 
-**Members per team:** **1 to 3 Max. Each member must submit a copy that includes the names of the members commented in the code.** 
-
-
+**Members per team:** **1 to 3 Max. Each member must submit a copy that includes the names of the members commented in the code.**
 
 **I. Project Description**
 
@@ -18,27 +16,27 @@ As a starting point, use the exercises explained in our class meetings on how to
 
 **II. Requirements and Expected Features**
 
-Although I am not expecting that you will be implementing a shell with the full services as the commercial edition (*due to time, resource constraints, and course scope*), I would love for you to implement as many features as your time allows and by the deadline.  Below are some of the features I expect you to implement in your shell: 
+Although I am not expecting that you will be implementing a shell with the full services as the commercial edition (_due to time, resource constraints, and course scope_), I would love for you to implement as many features as your time allows and by the deadline.  Below are some of the features I expect you to implement in your shell:
 
-**Things to consider before you start**: 
+**Things to consider before you start**:
 
 - The Shell exits if the user enters the command *exit*. This can easily be handled with a string comparison.
-- You may assume that each item in the command string is separated, on either side, by at least one space (e.g., **myProgram  >  outfile** rather than myProgram >outfile). 
+- You may assume that each item in the command string is separated, on either side, by at least one space (e.g., **myProgram  >  outfile** rather than myProgram >outfile).
 
 1: Printing the current directory (**pwd**)
 
-**Tip**: Try *getcwd()*  function in C/C++. Literature is rich with examples. 
+**Tip**: Try *getcwd()*  function in C/C++. Literature is rich with examples.
 
 2: You should allow the user to run and specify commands (and arguments) either by relative or absolute pathnames. Example ( **ls -l**   ).
 
-- Try ***execvp***. It will search the path automatically for you. The first argument should be a pointer to the command string and the second argument should be a pointer to a C-String array that contains the *command string as arg[0] and the other arguments as arg[1] through arg[n].* 
-- *I explained this in class, and you worked on hands-on programs. See my slides and your records. to learn more about **execvp**, use the man command on Ubuntu.*
+- Try **_execvp_**. It will search the path automatically for you. The first argument should be a pointer to the command string and the second argument should be a pointer to a C-String array that contains the *command string as arg[0] and the other arguments as arg[1] through arg[n].*
+- _I explained this in class, and you worked on hands-on programs. See my slides and your records. to learn more about **execvp**, use the man command on Ubuntu._
 
 3: The History of Commands (history):
 
-You should maintain a history of commands (including the invalid) previously entered by the user. Something similar to the system log file. You should create a queue (or list) that works in a FIFO fashion, and you should start numbering them with integer numbers starting by 1.  The number should be incremented as new lines are entered by the user (including the invalid commands, if any). 
+You should maintain a history of commands (including the invalid) previously entered by the user. Something similar to the system log file. You should create a queue (or list) that works in a FIFO fashion, and you should start numbering them with integer numbers starting by 1.  The number should be incremented as new lines are entered by the user (including the invalid commands, if any).
 
-- There is a history command in Linux. Try to do something similar by storing the non-empty commands in your dynamic list and printing it as needed. 
+- There is a history command in Linux. Try to do something similar by storing the non-empty commands in your dynamic list and printing it as needed.
 - Ideally, you create a file that is updated after the shell is terminated and uploaded when the user starts a new terminal session.
 
 4: (input and output redirection) You should allow the shell to redirect default **STDIN** and **STDOUT** for the new processes by using **<** and **> operators**. However, you can go with the assumption that the user will either redirect the input or the output but not both.
@@ -49,31 +47,27 @@ You should maintain a history of commands (including the invalid) previously ent
 - First open the file (use open, or create, open read-only for infiles and create writable for outfiles) and then use dup2.  As explained in class, 0 is the file descriptor for STDIN, and 1 is the file descriptor for STDOUT.
 - Besides the examples, I posted with my slides, literature, and the man command are helpful.
 
-\5) The shell should be able to handle simple **piping operations (single piping)**. 
+\5) The shell should be able to handle simple **piping operations (single piping)**.
 
-If the user enters the following command: 
+If the user enters the following command:
 
-**./myProg1   |  ./myProg2** 
+**./myProg1   |  ./myProg2**
 
 The shell should run the first program and then the second program. However, the second program should not start until the first one is done. The output of the first program will be forwarded as an input of the second program.
 
 **Tip**: create more than one process to handle this situation. Use wait () to make the second child wait for the first.  Use the pipe() to establish communication between them so the first process passes the information to the second via a pipe, if needed.
 
-Remember: We had a hands-on exercise that uses the same concept. 
+Remember: We had a hands-on exercise that uses the same concept.
 
 **How to open a file for reading so that I can use it for changing the standards input?**
 
-**int inFd = open("yourfile.txt", O\_RDONLY);****dup2(inFd, 0);**
-
-
+**int inFd = open("yourfile.txt", O_RDONLY);\*\***dup2(inFd, 0);\*\*
 
 **How to open a file for writing so that I can use it for changing the standards output?**
 
-**int outFd = open(pathName[0], O\_WRONLY | O\_CREAT, 0666);**
+**int outFd = open(pathName[0], O_WRONLY | O_CREAT, 0666);**
 
 **dup2(outFd , 1);**
-
-
 
 **How to make the parent (shell) process wait for the child process and then get things (STDIN and STDOUT) back to normal?**
 
@@ -94,8 +88,6 @@ The program should have the following phases:
 7. if the command has redirection of an input or output, you can assume that the last token is the file name and open the file and use dup2() to change the standard in or out as explained in Canvas.
 8. if the command has a pipe operator, then you need to create two children. There is an example of canvas that does this command so you can use it.
 
-
-
 **III.       What will be graded and what are you expected to submit**
 
 The source files (full application) of the terminal (shell simulator) program with features 1-5 are fully accomplished.  The points (1 to 5) are explained above.  That is, get your terminal program ready with all the features 1-5.
@@ -108,8 +100,6 @@ The source files (full application) of the terminal (shell simulator) program wi
 - If you use anything from the literature, please cite it and add it as a reference to your work (as comments or on a separate paper submitted with the work.)
 - I will make myself accessible so never hesitate to contact me if you have any questions.
 - Develop and test your program in an incremental fashion. So, start with points 1 to 3. Then add 4 and 5.
-
-
 
 **Dr. Saleh Alnaeli**
 
