@@ -21,6 +21,10 @@ main(){
             pipe result back to parent
         else if (isOutRead() >= 0)
             cwd parameter > fileName //Part 2 of assignment 3
+        else if ( ispipe(line) >= 1)
+            int loc = ispipe();
+            cmd1 | cmd2
+            change std out to be the pipe, then send the output of cmd1 to cmd2
     }
 
     updatehis(his);
