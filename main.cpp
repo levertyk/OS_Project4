@@ -1,11 +1,15 @@
+// Operating Systems
+
+// Keenan Leverty
+// Colby Tiefenthaler
+// Damien Hess
+
 #include <iostream>
 
-//keenAN Leverty
-//Colby Tiefenthaler
-//Damian
 using namespace std;
 
-int main(){
+int main()
+{
 
     return 0;
 }
