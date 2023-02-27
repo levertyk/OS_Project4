@@ -13,12 +13,24 @@ main(){
             cout << pwd;
         else if (line == "exit")
             break();
-        else if ()
+        else if (pipe() < 0 && isOutDir() < 0 && isInDir < 0)
+            fork()
+            tokenize
+            move to c_str // Assignment
+            execvp
+            pipe result back to parent
+        else if (isOutRead() >= 0)
+            cwd parameter > fileName //Part 2 of assignment 3
     }
 
     updatehis(his);
 
     return 0
+}
+
+int pipe(string line){
+    look up | and return it's index
+    return index, or -1 if not
 }
 
 string pwd(){
