@@ -11,14 +11,24 @@ main(){
             printHistory(history);
         else if (line == "pwd")
             cout << pwd;
-        else if (line == "exit") break();
+        else if (line == "exit")
+            break();
+        else if ()
     }
+
+    updatehis(his);
+
+    return 0
 }
 
 string pwd(){
     return ""
 
 }
+
+
+__________________________________________________________________
+
 
 needs to support:
     pwd
