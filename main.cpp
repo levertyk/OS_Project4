@@ -19,6 +19,47 @@ const int MAX_HISTORY = 128;
 vector<string> history;
 int num_commands = 0;
 
+void add_history(string command)
+{
+    if (history.size() >= MAX_HISTORY)
+    {
+        history.erase(history.begin());
+    }
+    history.push_back(command);
+    num_commands++;
+}
+
+void display_history()
+{
+    for (int i = 0; i < history.size(); i++)
+    {
+        cout << i + 1 << ". " << history[i] << endl;
+    }
+}
+
+void execute_command(char *args[])
+{
+    pid_t pid = fork();
+    if (pid == -1) // bad
+    {
+        cerr << "Failed to fork child process" << endl;
+        exit(EXIT_FAILURE);
+    }
+    else if (pid == 0)
+    { // child
+        if (execvp(args[0], args) == -1)
+        {
+            perror("Error executing command");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else // parnet
+    {
+        int status;
+        waitpid(pid, &status, 0);
+    }
+}
+
 int main()
 {
     string command;
