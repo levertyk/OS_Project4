@@ -17,7 +17,29 @@ using namespace std;
 
 const int MAX_HISTORY = 128;
 vector<string> history;
+
 int num_commands = 0;
+
+
+// TOKENIZER
+vector<string> tokenize(string commands){
+vector<string> commandList;
+// split commands delimited by spaces into commandList
+	string delim = " ";
+	while(commands != ""){
+		
+		if (commands.find(delim) != string::npos){
+			commandList.push_back(commands.substr(0, commands.find(delim)));
+			commands = commands.substr(commands.find(delim)+1, string::npos);
+		} else{
+			commandList.push_back(commands.substr(0, string::npos));
+			commands = "";
+		}
+
+}
+
+return commandList;
+}
 
 void add_history(string command)
 {
@@ -47,6 +69,7 @@ void execute_command(char *args[])
     }
     else if (pid == 0)
     { // child
+
         if (execvp(args[0], args) == -1)
         {
             perror("Error executing command");
@@ -88,12 +111,12 @@ int main()
         {
             display_history();
         }
-        else if (command == "ls")
-        {
-        }
-        else if (command == "ls -l")
-        {
-        }
+        //else if (command == "ls")
+        //{// shouldnt be specific commands for system calls
+       // }
+        //else if (command == "ls -l")
+        //{// shouldnt be specific commands for system calls
+       // }
         else if (command.substr(0, 2) == "./")
         {
         }
@@ -101,8 +124,19 @@ int main()
         {
         }
         else
-        {
-            cout << "Unknown command" << endl;
+        {// if no match run command with execvp
+        // use vector to tokenize data
+        		vector<string> commandList;
+        		commandList = tokenize(command);
+        		// change to c string for execution
+        		char * commandListC[commandList.size() + 1];
+        		commandListC[commandList.size()] = NULL;
+        		for(int i = 0; i < commandList.size(); i++){
+        			commandListC[i] = (char*) commandList[i].c_str();
+        		}// run execute on command
+
+        		cout << "hello world" << endl;
+        		execute_command(commandListC);
         }
     }
 
