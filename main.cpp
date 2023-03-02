@@ -40,6 +40,8 @@ vector<string> tokenize(string commands)
             commands = "";
         }
     }
+    
+   
 
     return commandList;
 }
@@ -85,17 +87,58 @@ void execute_command(char *args[])
         waitpid(pid, &status, 0);
     }
 }
+// looks for >,< or \ tokens in the array
+void execute_parse(vector<string> commandList){
+string token;
+int pointer = -1;
+
+for(int i = 0; i < commandList.size(); i++){
+
+	if( commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|"){
+
+		token = commandList[i];
+		pointer = i;
+	}
+}
+
+	
+	char *commandListC[commandList.size() + 1];
+   commandListC[commandList.size()] = NULL;
+   for (int i = 0; i < commandList.size(); i++)
+   {
+       commandListC[i] = (char *)commandList[i].c_str();
+   } // run execute on command
+   
+	if(pointer < 0){
+	
+		execute_command(commandListC);
+	}else{
+		if(token == ">"){
+			cout << ">" << endl;
+		}
+		else if(token == "<"){
+			cout << "<" << endl;
+		}
+		else if(token == "|"){
+			cout << "|" << endl;
+		}
+	}
+
+}
 
 int main()
 {
     string command;
     char *args[100];
+    char directory[100];
 
     cout << "Simple Shell. Type 'exit' to quit." << endl;
 
     while (true)
     {
-        cout << "$ ";
+    	  fflush(stdout);
+    	  getcwd(directory, sizeof(directory));
+        cout << directory <<"$ ";
         getline(cin, command);
         if (command.empty())
         {
@@ -126,15 +169,9 @@ int main()
             vector<string> commandList;
             commandList = tokenize(command);
             // change to c string for execution
-            char *commandListC[commandList.size() + 1];
-            commandListC[commandList.size()] = NULL;
-            for (int i = 0; i < commandList.size(); i++)
-            {
-                commandListC[i] = (char *)commandList[i].c_str();
-            } // run execute on command
-
-            cout << "hello world" << endl;
-            execute_command(commandListC);
+            
+            
+            execute_parse(commandList);
         }
     }
 
