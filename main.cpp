@@ -100,7 +100,7 @@ void execute_parse(vector<string> commandList)
         if (commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|")
         {
             function = commandList[i];
-            pointer = i+1; // next character, start of second part of the command
+            pointer = i + 1; // next character, start of second part of the command
         }
     }
 
@@ -167,13 +167,16 @@ void executeRedirect(char *commandList[], string inPath = "", string outPath = "
     // cleanup when done (after wait)
     fflush(stdout);
     if (inFd != NULL)
+    {
         dup2(ogIfd, 0);
-    if (outFd != NULL)
-        dup2(ogOfd, 1);
-    if (inFd != NULL)
         close(ogIfd);
+    }
     if (outFd != NULL)
+    {
+        dup2(ogOfd, 1);
         close(ogOfd);
+    }
+
     fflush(stdout);
 }
 
