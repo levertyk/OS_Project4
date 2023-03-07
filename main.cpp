@@ -89,17 +89,18 @@ void execute_command(char *args[])
 // looks for >,< or \ tokens in the array
 void execute_parse(vector<string> commandList)
 {
-    string token;
+    string function;
     int pointer = -1;
 
+    // finds either the < > or |
+    // saves the location in the pointer var
+    // saves the character as function
     for (int i = 0; i < commandList.size(); i++)
     {
-
         if (commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|")
         {
-
-            token = commandList[i];
-            pointer = i;
+            function = commandList[i];
+            pointer = i+1; // next character, start of second part of the command
         }
     }
 
@@ -117,15 +118,15 @@ void execute_parse(vector<string> commandList)
     }
     else
     {
-        if (token == ">")
+        if (function == ">") // change output
         {
-            cout << ">" << endl;
+            executeRedirect(commandListC, "", commandList[pointer]);
         }
-        else if (token == "<")
+        else if (function == "<") // change input
         {
-            cout << "<" << endl;
+            executeRedirect(commandListC, commandList[pointer]);
         }
-        else if (token == "|")
+        else if (function == "|") // TODO: impelment pipe
         {
             cout << "|" << endl;
         }
