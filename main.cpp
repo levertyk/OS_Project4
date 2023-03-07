@@ -2,10 +2,10 @@
 
 // Keenan Leverty
 // Colby Tiefenthaler
-// Damien Hess
 
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -40,8 +40,6 @@ vector<string> tokenize(string commands)
             commands = "";
         }
     }
-    
-   
 
     return commandList;
 }
@@ -87,43 +85,95 @@ void execute_command(char *args[])
         waitpid(pid, &status, 0);
     }
 }
+
 // looks for >,< or \ tokens in the array
-void execute_parse(vector<string> commandList){
-string token;
-int pointer = -1;
+void execute_parse(vector<string> commandList)
+{
+    string token;
+    int pointer = -1;
 
-for(int i = 0; i < commandList.size(); i++){
+    for (int i = 0; i < commandList.size(); i++)
+    {
 
-	if( commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|"){
+        if (commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|")
+        {
 
-		token = commandList[i];
-		pointer = i;
-	}
+            token = commandList[i];
+            pointer = i;
+        }
+    }
+
+    char *commandListC[commandList.size() + 1];
+    commandListC[commandList.size()] = NULL;
+    for (int i = 0; i < commandList.size(); i++)
+    {
+        commandListC[i] = (char *)commandList[i].c_str();
+    } // run execute on command
+
+    if (pointer < 0)
+    {
+
+        execute_command(commandListC);
+    }
+    else
+    {
+        if (token == ">")
+        {
+            cout << ">" << endl;
+        }
+        else if (token == "<")
+        {
+            cout << "<" << endl;
+        }
+        else if (token == "|")
+        {
+            cout << "|" << endl;
+        }
+    }
 }
 
-	
-	char *commandListC[commandList.size() + 1];
-   commandListC[commandList.size()] = NULL;
-   for (int i = 0; i < commandList.size(); i++)
-   {
-       commandListC[i] = (char *)commandList[i].c_str();
-   } // run execute on command
-   
-	if(pointer < 0){
-	
-		execute_command(commandListC);
-	}else{
-		if(token == ">"){
-			cout << ">" << endl;
-		}
-		else if(token == "<"){
-			cout << "<" << endl;
-		}
-		else if(token == "|"){
-			cout << "|" << endl;
-		}
-	}
+// handles redirected inputs
+// takes the command list, an optional input path, and optional output path
+void executeRedirect(char *commandList[], string inPath = "", string outPath = "")
+{
+    // save original file descriptors
+    int ogIfd = dup(0);
+    int ogOfd = dup(1);
 
+    int inFd, outFd;
+
+    // open input file
+    if (inPath != "")
+    {
+        inFd = open(inPath, fstream::in | fstream::app); // TODO: this is probably wrong
+    }
+
+    // open output file
+    if (outPath != "")
+    {
+        outFd = open(outPath, fstream::out | fstream::app); // TODO: this is probably wrong
+    }
+
+    // change the file descriptors to the new in/out fd
+    if (inFd != NULL)
+        dup2(inFd, 0);
+    if (outFd != NULL)
+        dup2(outFd, 1);
+
+    // execute command with new fd
+    execute_command(commandList);
+
+    // cleanup when done (after wait)
+    fflush(stdout);
+    if (inFd != NULL)
+        dup2(ogIfd, 0);
+    if (outFd != NULL)
+        dup2(ogOfd, 1);
+    if (inFd != NULL)
+        close(ogIfd);
+    if (outFd != NULL)
+        close(ogOfd);
+    fflush(stdout);
 }
 
 int main()
@@ -136,9 +186,9 @@ int main()
 
     while (true)
     {
-    	  fflush(stdout);
-    	  getcwd(directory, sizeof(directory));
-        cout << directory <<"$ ";
+        fflush(stdout);
+        getcwd(directory, sizeof(directory));
+        cout << directory << "$ ";
         getline(cin, command);
         if (command.empty())
         {
@@ -169,8 +219,7 @@ int main()
             vector<string> commandList;
             commandList = tokenize(command);
             // change to c string for execution
-            
-            
+
             execute_parse(commandList);
         }
     }
