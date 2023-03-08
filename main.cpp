@@ -194,8 +194,7 @@ void executePipe(int pipefd[2], vector<string> commandList, int functionIndex)
     { // parnet
         close(pipefd[1]);
         dup2(pipefd[0], STDIN_FILENO);
-        if (execvp(cmd2[0], cmd2))
-            exit(EXIT_FAILURE);
+        execute_command(cmd2);
     }
 }
 
@@ -236,7 +235,7 @@ void execute_parse(vector<string> commandList)
         {                    // gives it the first command, ignores the function char, then gives it the path
             executeRedirect(commandList, function, pointer);
         }
-        else // TODO: impelment pipe
+        else // impelment pipe
         {    // gives it the first command, ignores the function, then gives it the second command
             int pipefd[2];
             executePipe(pipefd, commandList, pointer);
