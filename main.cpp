@@ -98,7 +98,7 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
     int inFd, outFd;
 
     char path[commandList[functionIndex + 1].size() + 1];
-    path[sizeof(path)] = nullptr;
+    path[sizeof(path)] = NULL;
     for (int i = 0; i < sizeof(path) - 1; i++)
     {
         path[i] = *commandList[functionIndex + 1].c_str();
@@ -153,16 +153,16 @@ void executePipe(int pipefd[2], vector<string> commandList, int functionIndex)
 {
     pid_t pid;
     int status;
-
-    char *cmd1[commandList.size() + 1];
-    cmd1[commandList.size()] = nullptr;
+	cout << "hello world" << endl;
+    char *cmd1[functionIndex];
+    cmd1[functionIndex + 1] = nullptr;
     for (int i = 0; i < functionIndex; i++)
     {
         cmd1[i] = (char *)commandList[i].c_str();
     }
 
-    char *cmd2[commandList.size() + 1];
-    cmd2[commandList.size()] = nullptr;
+    char *cmd2[(commandList.size() - functionIndex)];
+    cmd2[(commandList.size() - functionIndex) + 1] = nullptr;
     for (int i = functionIndex; i < commandList.size(); i++)
     {
         cmd2[i] = (char *)commandList[i].c_str();
@@ -184,16 +184,17 @@ void executePipe(int pipefd[2], vector<string> commandList, int functionIndex)
     else if (pid == 0)
     { // chilled
         close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO); // change the stdout to be the pipe
-
+        dup2(pipefd[1], 1); // change the stdout to be the pipe
+			
         if (execvp(cmd1[0], cmd1))
 
             exit(EXIT_FAILURE); // Exit child process if execvp fails}
     }
     else
     { // parnet
+    		cout << "howsa goin?" << endl;
         close(pipefd[1]);
-        dup2(pipefd[0], STDIN_FILENO);
+        dup2(pipefd[0], 0);
         if (execvp(cmd2[0], cmd2))
             exit(EXIT_FAILURE);
     }
