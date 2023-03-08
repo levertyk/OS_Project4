@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <vector>
 #include <sys/stat.h>
 
@@ -112,8 +113,8 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
     if (outFd != NULL)
         dup2(outFd, 1);
 
-    commandList.pop();
-    commandList.pop();
+    commandList.pop_back();
+    commandList.pop_back();
 
     char *commandListC[commandList.size() + 1];
     commandListC[commandList.size()] = nullptr;
