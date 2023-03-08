@@ -111,24 +111,25 @@ void execute_parse(vector<string> commandList)
         commandListC[i] = (char *)commandList[i].c_str();
     } // run execute on command
 
+    // If no special characters are found, execute the command normally
     if (pointer < 0)
     {
 
         execute_command(commandListC);
     }
-    else
+    else // special command found
     {
         if (function == ">") // change output
-        {
-            executeRedirect(commandListC, "", commandList[pointer]);
+        {                    // gives it the first command, ignores the function char, then gives it the path
+            executeRedirect((char *)commandList[0].c_str(), "", commandList[pointer]);
         }
         else if (function == "<") // change input
-        {
-            executeRedirect(commandListC, commandList[pointer]);
+        {                         // gives it the first command, ignores the function char, then gives it the path
+            executeRedirect((char *)commandList[0].c_str(), commandList[pointer]);
         }
         else if (function == "|") // TODO: impelment pipe
-        {
-            cout << "|" << endl;
+        {                         // gives it the first command, ignores the function, then gives it the second command
+            executePipe((char *)commandList[0].c_str(), (char *)commandList[pointer].c_str())
         }
     }
 }
@@ -178,6 +179,33 @@ void executeRedirect(char *commandList[], string inPath = "", string outPath = "
     }
 
     fflush(stdout);
+}
+
+void executePipe(char *command1[], char *command2[])
+{
+    pid_t pid;
+    int fds1[2], fds2[2];
+    const int c1Length = command1.size();
+    const int c2Length = command2.size();
+
+    if (pipe(fds1) == -1 || pipe(fds2) == -1)
+    {
+        cerr << "Error creating pipe" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    pid = fork();
+    if (pid < 0)
+    {
+        cout << "Error creating the fork" << endl;
+        exit(EXIT_FAILURE)
+    }
+
+    if (pid == 0) // chilled
+    {
+        close(fds1[1]);
+        close(fds2[0]);
+    }
 }
 
 int main()
