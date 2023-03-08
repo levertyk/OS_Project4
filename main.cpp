@@ -98,7 +98,7 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
     int inFd, outFd;
 
     char path[commandList[functionIndex + 1].size() + 1];
-    path[sizeof(path)] = nullptr;
+    path[sizeof(path)] = NULL;
     for (int i = 0; i < sizeof(path) - 1; i++)
     {
         path[i] = *commandList[functionIndex + 1].c_str();
