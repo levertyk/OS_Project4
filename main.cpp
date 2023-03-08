@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <vector>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -87,7 +88,7 @@ void execute_command(char *args[])
 
 // handles redirected inputs
 // takes the command list, an optional input path, and optional output path
-void executeRedirect(char *commandList[], string inPath = "", string outPath = "")
+void executeRedirect(vector<string> commandList, string function, int functionIndex)
 {
     // save original file descriptors
     int ogInfd = dup(0);
@@ -96,15 +97,13 @@ void executeRedirect(char *commandList[], string inPath = "", string outPath = "
     int inFd, outFd;
 
     // open input file
-    if (inPath != "")
+    if (function == "<")
     {
-        inFd = open(inPath, O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
+        inFd = open(commandList[functionIndex + 1], O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
     }
-
-    // open output file
-    if (outPath != "")
+    else
     {
-        outFd = open(outPath, O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
+        outFd = open(commandList[functionIndex + 1], O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
     }
 
     // change the file descriptors to the new in/out fd
@@ -113,8 +112,18 @@ void executeRedirect(char *commandList[], string inPath = "", string outPath = "
     if (outFd != NULL)
         dup2(outFd, 1);
 
+    commandList.pop();
+    commandList.pop();
+
+    char *commandListC[commandList.size() + 1];
+    commandListC[commandList.size()] = nullptr;
+    for (int i = 0; i < commandList.size(); i++)
+    {
+        commandListC[i] = (char *)commandList[i].c_str();
+    } // run execute on command
+
     // execute command with new fd
-    execute_command((char *)commandList);
+    execute_command(commandListC);
 
     // cleanup when done (after wait)
     fflush(stdout);
@@ -182,7 +191,7 @@ void execute_parse(vector<string> commandList)
         if (commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|")
         {
             function = commandList[i];
-            pointer = i + 1; // next character, start of second part of the command
+            pointer = i;
         }
     }
 
@@ -196,21 +205,17 @@ void execute_parse(vector<string> commandList)
     // If no special characters are found, execute the command normally
     if (pointer < 0)
     {
-
         execute_command(commandListC);
     }
     else // special command found
     {
-        if (function == ">") // change output
+
+        if (function != "|") // change input
         {                    // gives it the first command, ignores the function char, then gives it the path
-            executeRedirect((char *)commandList[0].c_str(), "", commandList[pointer]);
+            executeRedirect(commandList, function, pointer);
         }
-        else if (function == "<") // change input
-        {                         // gives it the first command, ignores the function char, then gives it the path
-            executeRedirect((char *)commandList[0].c_str(), commandList[pointer]);
-        }
-        else if (function == "|") // TODO: impelment pipe
-        {                         // gives it the first command, ignores the function, then gives it the second command
+        else // TODO: impelment pipe
+        {    // gives it the first command, ignores the function, then gives it the second command
             int pipefd[2];
             executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str());
         }
