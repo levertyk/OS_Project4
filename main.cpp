@@ -7,15 +7,15 @@
 #include <string>
 #include <fstream>
 #include <cstring>
-#include <cstdlib>
-#include <cstdio>
+#include <stdexcept>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
-const int MAX_HISTORY = 128;
+constexpr int MAX_HISTORY = 128;
 vector<string> history;
 
 int num_commands = 0;
@@ -44,6 +44,26 @@ vector<string> tokenize(string commands)
     return commandList;
 }
 
+vector<string> tokenize2(const string& input) {
+    vector<string> tokens;
+    regex pattern("[\\w\\-]+"); 
+    smatch match;
+
+    auto start = input.cbegin();
+    auto end = input.cend();
+
+    while (regex_search(start, end, match, pattern)) {
+        tokens.push_back(match.str());
+        start = match.suffix().first;
+    }
+
+    if (tokens.empty()) {
+        throw invalid_argument("Invalid input: no valid tokens found.");
+    }
+
+    return tokens;
+}
+
 void add_history(string command)
 {
     if (history.size() >= MAX_HISTORY)
@@ -62,7 +82,7 @@ void display_history()
     }
 }
 
-void execute_command(char *args[])
+void execute_command(const char *args[])
 {
     pid_t pid = fork();
     if (pid == -1) // bad
@@ -105,7 +125,7 @@ void execute_parse(vector<string> commandList)
     }
 
     char *commandListC[commandList.size() + 1];
-    commandListC[commandList.size()] = NULL;
+    commandListC[commandList.size()] = nullptr;
     for (int i = 0; i < commandList.size(); i++)
     {
         commandListC[i] = (char *)commandList[i].c_str();
@@ -129,18 +149,19 @@ void execute_parse(vector<string> commandList)
         }
         else if (function == "|") // TODO: impelment pipe
         {                         // gives it the first command, ignores the function, then gives it the second command
-            executePipe((char *)commandList[0].c_str(), (char *)commandList[pointer].c_str())
+            int pipefd[2];
+            executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str())
         }
     }
 }
 
 // handles redirected inputs
 // takes the command list, an optional input path, and optional output path
-void executeRedirect(char *commandList[], string inPath = "", string outPath = "")
+void executeRedirect(const char *commandList[], string inPath = "", string outPath = "")
 {
     // save original file descriptors
-    int ogIfd = dup(0);
-    int ogOfd = dup(1);
+    int ogInfd = dup(0);
+    int ogOutfd = dup(1);
 
     int inFd, outFd;
 
@@ -157,9 +178,9 @@ void executeRedirect(char *commandList[], string inPath = "", string outPath = "
     }
 
     // change the file descriptors to the new in/out fd
-    if (inFd != NULL)
+    if (inFd != nullptr)
         dup2(inFd, 0);
-    if (outFd != NULL)
+    if (outFd != nullptr)
         dup2(outFd, 1);
 
     // execute command with new fd
@@ -167,44 +188,53 @@ void executeRedirect(char *commandList[], string inPath = "", string outPath = "
 
     // cleanup when done (after wait)
     fflush(stdout);
-    if (inFd != NULL)
+    if (inFd != nullptr)
     {
-        dup2(ogIfd, 0);
-        close(ogIfd);
+        dup2(ogInfd, 0);
+        close(ogInfd);
     }
-    if (outFd != NULL)
+    if (outFd != nullptr)
     {
-        dup2(ogOfd, 1);
-        close(ogOfd);
+        dup2(ogOutfd, 1);
+        close(ogOutfd);
     }
 
     fflush(stdout);
 }
 
-void executePipe(char *command1[], char *command2[])
+void executePipe(int pipefd[2], char *cmd1[], char *cmd2[])
 {
     pid_t pid;
-    int fds1[2], fds2[2];
-    const int c1Length = command1.size();
-    const int c2Length = command2.size();
+    int status;
 
-    if (pipe(fds1) == -1 || pipe(fds2) == -1)
+    if (pipe(pipefd) == -1)
     {
-        cerr << "Error creating pipe" << endl;
+        cerr << "Error: could not create pipe." << endl;
         exit(EXIT_FAILURE);
     }
 
     pid = fork();
-    if (pid < 0)
-    {
-        cout << "Error creating the fork" << endl;
-        exit(EXIT_FAILURE)
-    }
 
-    if (pid == 0) // chilled
+    if (pid == -1)
     {
-        close(fds1[1]);
-        close(fds2[0]);
+        cerr << "Error: fork failed." << endl;
+        exit(EXIT_FAILURE);
+    }
+    else if (pid == 0)
+    { // chilled
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO); // change the stdout to be the pipe
+
+        if (execvp(cmd1[0], cmd1))
+
+            exit(EXIT_FAILURE); // Exit child process if execvp fails}
+    }
+    else
+    { // parnet
+        close(pipefd[1]);
+        dup2(pipefd[0], STDIN_FILENO);
+        if (execvp(cmd2[0], cmd2))
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -240,7 +270,7 @@ int main()
         { // if no match run command with execvp
             // use vector to tokenize data
             vector<string> commandList;
-            commandList = tokenize(command);
+            commandList = tokenize2(command);
             // change to c string for execution
 
             execute_parse(commandList);
