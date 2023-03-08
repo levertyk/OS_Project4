@@ -85,55 +85,6 @@ void execute_command(char *args[])
     }
 }
 
-// looks for >,< or \ tokens in the array
-void execute_parse(vector<string> commandList)
-{
-    string function;
-    int pointer = -1;
-
-    // finds either the < > or |
-    // saves the location in the pointer var
-    // saves the character as function
-    for (int i = 0; i < commandList.size(); i++)
-    {
-        if (commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|")
-        {
-            function = commandList[i];
-            pointer = i + 1; // next character, start of second part of the command
-        }
-    }
-
-    char *commandListC[commandList.size() + 1];
-    commandListC[commandList.size()] = nullptr;
-    for (int i = 0; i < commandList.size(); i++)
-    {
-        commandListC[i] = (char *)commandList[i].c_str();
-    } // run execute on command
-
-    // If no special characters are found, execute the command normally
-    if (pointer < 0)
-    {
-
-        execute_command(commandListC);
-    }
-    else // special command found
-    {
-        if (function == ">") // change output
-        {                    // gives it the first command, ignores the function char, then gives it the path
-            executeRedirect((char *)commandList[0].c_str(), "", commandList[pointer]);
-        }
-        else if (function == "<") // change input
-        {                         // gives it the first command, ignores the function char, then gives it the path
-            executeRedirect((char *)commandList[0].c_str(), commandList[pointer]);
-        }
-        else if (function == "|") // TODO: impelment pipe
-        {                         // gives it the first command, ignores the function, then gives it the second command
-            int pipefd[2];
-            executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str());
-        }
-    }
-}
-
 // handles redirected inputs
 // takes the command list, an optional input path, and optional output path
 void executeRedirect(char *commandList[], string inPath = "", string outPath = "")
@@ -214,6 +165,55 @@ void executePipe(int pipefd[2], char *cmd1[], char *cmd2[])
         dup2(pipefd[0], STDIN_FILENO);
         if (execvp(cmd2[0], cmd2))
             exit(EXIT_FAILURE);
+    }
+}
+
+// looks for >,< or \ tokens in the array
+void execute_parse(vector<string> commandList)
+{
+    string function;
+    int pointer = -1;
+
+    // finds either the < > or |
+    // saves the location in the pointer var
+    // saves the character as function
+    for (int i = 0; i < commandList.size(); i++)
+    {
+        if (commandList[i] == "<" || commandList[i] == ">" || commandList[i] == "|")
+        {
+            function = commandList[i];
+            pointer = i + 1; // next character, start of second part of the command
+        }
+    }
+
+    char *commandListC[commandList.size() + 1];
+    commandListC[commandList.size()] = nullptr;
+    for (int i = 0; i < commandList.size(); i++)
+    {
+        commandListC[i] = (char *)commandList[i].c_str();
+    } // run execute on command
+
+    // If no special characters are found, execute the command normally
+    if (pointer < 0)
+    {
+
+        execute_command(commandListC);
+    }
+    else // special command found
+    {
+        if (function == ">") // change output
+        {                    // gives it the first command, ignores the function char, then gives it the path
+            executeRedirect((char *)commandList[0].c_str(), "", commandList[pointer]);
+        }
+        else if (function == "<") // change input
+        {                         // gives it the first command, ignores the function char, then gives it the path
+            executeRedirect((char *)commandList[0].c_str(), commandList[pointer]);
+        }
+        else if (function == "|") // TODO: impelment pipe
+        {                         // gives it the first command, ignores the function, then gives it the second command
+            int pipefd[2];
+            executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str());
+        }
     }
 }
 
