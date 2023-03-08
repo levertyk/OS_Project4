@@ -97,14 +97,21 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
 
     int inFd, outFd;
 
+    char path[commandList[functionIndex + 1].size() + 1];
+    path[sizeof(path)] = NULL;
+    for (int i = 0; i < sizeof(path) - 1; i++)
+    {
+        path[i] = *commandList[functionIndex + 1].c_str();
+    }
+
     // open input file
     if (function == "<")
     {
-        inFd = open(commandList[functionIndex + 1], O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
+        inFd = open(path, O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
     }
     else
     {
-        outFd = open(commandList[functionIndex + 1], O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
+        outFd = open(path, O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
     }
 
     // change the file descriptors to the new in/out fd
