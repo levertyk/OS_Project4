@@ -151,9 +151,10 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
 
 void executePipe(int pipefd[2], vector<string> commandList, int functionIndex)
 {
-    pid_t pid;
-    int status;
-	cout << "hello world" << endl;
+    // pid_t pid;
+    // int status;
+    // cout << "hello world" << endl;
+
     char *cmd1[functionIndex];
     cmd1[functionIndex + 1] = nullptr;
     for (int i = 0; i < functionIndex; i++)
@@ -168,35 +169,72 @@ void executePipe(int pipefd[2], vector<string> commandList, int functionIndex)
         cmd2[i] = (char *)commandList[i].c_str();
     }
 
-    if (pipe(pipefd) == -1)
+    // if (pipe(pipefd) == -1)
+    // {
+    //     cerr << "Error: could not create pipe." << endl;
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // pid = fork();
+
+    // if (pid == -1)
+    // {
+    //     cerr << "Error: fork failed." << endl;
+    //     exit(EXIT_FAILURE);
+    // }
+    // else if (pid == 0)
+    // { // chilled
+    //     close(pipefd[0]);
+    //     dup2(pipefd[1], 1); // change the stdout to be the pipe
+
+    //     if (execvp(cmd1[0], cmd1))
+
+    //         exit(EXIT_FAILURE); // Exit child process if execvp fails}
+    // }
+    // else
+    // { // parnet
+    //     cout << "howsa goin?" << endl;
+    //     close(pipefd[1]);
+    //     dup2(pipefd[0], 0);
+    //     execute_command(cmd2);
+    // }
+
+    int des_p[2];
+    if (pipe(des_p) == -1)
     {
-        cerr << "Error: could not create pipe." << endl;
-        exit(EXIT_FAILURE);
+        perror("Pipe failed");
+        exit(1);
     }
 
-    pid = fork();
-
-    if (pid == -1)
+    if (fork() == 0) // first fork
     {
-        cerr << "Error: fork failed." << endl;
-        exit(EXIT_FAILURE);
-    }
-    else if (pid == 0)
-    { // chilled
-        close(pipefd[0]);
-        dup2(pipefd[1], 1); // change the stdout to be the pipe
-			
-        if (execvp(cmd1[0], cmd1))
+        close(STDOUT_FILENO); // closing stdout
+        dup(des_p[1]);        // replacing stdout with pipe write
+        close(des_p[0]);      // closing pipe read
+        close(des_p[1]);
 
-            exit(EXIT_FAILURE); // Exit child process if execvp fails}
+        execvp(cmd1[0], cmd1);
+        perror("execvp of ls failed");
+        exit(1);
     }
-    else
-    { // parnet
-    		cout << "howsa goin?" << endl;
-        close(pipefd[1]);
-        dup2(pipefd[0], 0);
-        execute_command(cmd2);
+
+    if (fork() == 0) // creating 2nd child
+    {
+        close(STDIN_FILENO); // closing stdin
+        dup(des_p[0]);       // replacing stdin with pipe read
+        close(des_p[1]);     // closing pipe write
+        close(des_p[0]);
+
+
+        execvp(cmd2[0], cmd2);
+        perror("execvp of wc failed");
+        exit(1);
     }
+
+    close(des_p[0]);
+    close(des_p[1]);
+    wait(0);
+    wait(0);
 }
 
 // looks for >,< or \ tokens in the array
