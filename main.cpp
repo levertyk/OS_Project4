@@ -98,7 +98,7 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
     int inFd, outFd;
 
     char path[commandList[functionIndex + 1].size() + 1];
-    path[sizeof(path)] = NULL;
+    path[sizeof(path)] = nullptr;
     for (int i = 0; i < sizeof(path) - 1; i++)
     {
         path[i] = *commandList[functionIndex + 1].c_str();
@@ -149,10 +149,24 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
     fflush(stdout);
 }
 
-void executePipe(int pipefd[2], char *cmd1[], char *cmd2[])
+void executePipe(int pipefd[2], vector<string> commandList, int functionIndex)
 {
     pid_t pid;
     int status;
+
+    char *cmd1[commandList.size() + 1];
+    cmd1[commandList.size()] = nullptr;
+    for (int i = 0; i < functionIndex; i++)
+    {
+        cmd1[i] = (char *)commandList[i].c_str();
+    }
+
+    char *cmd2[commandList.size() + 1];
+    cmd2[commandList.size()] = nullptr;
+    for (int i = functionIndex; i < commandList.size(); i++)
+    {
+        cmd2[i] = (char *)commandList[i].c_str();
+    }
 
     if (pipe(pipefd) == -1)
     {
@@ -225,7 +239,7 @@ void execute_parse(vector<string> commandList)
         else // TODO: impelment pipe
         {    // gives it the first command, ignores the function, then gives it the second command
             int pipefd[2];
-            executePipe(pipefd, (char **)commandList[0].c_str(), (char **)commandList[2].c_str());
+            executePipe(pipefd, commandList, pointer);
         }
     }
 }
