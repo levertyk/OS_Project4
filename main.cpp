@@ -115,9 +115,9 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
     }
 
     // change the file descriptors to the new in/out fd
-    if (inFd != NULL)
+    if (function == "<")
         dup2(inFd, 0);
-    if (outFd != NULL)
+    else
         dup2(outFd, 1);
 
     commandList.pop_back();
@@ -135,12 +135,12 @@ void executeRedirect(vector<string> commandList, string function, int functionIn
 
     // cleanup when done (after wait)
     fflush(stdout);
-    if (inFd != NULL)
+    if (function == "<")
     {
         dup2(ogInfd, 0);
         close(ogInfd);
     }
-    if (outFd != NULL)
+    else
     {
         dup2(ogOutfd, 1);
         close(ogOutfd);
@@ -225,7 +225,7 @@ void execute_parse(vector<string> commandList)
         else // TODO: impelment pipe
         {    // gives it the first command, ignores the function, then gives it the second command
             int pipefd[2];
-            executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str());
+            executePipe(pipefd, (char **)commandList[0].c_str(), (char **)commandList[2].c_str());
         }
     }
 }
