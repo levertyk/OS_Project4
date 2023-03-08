@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <vector>
-#include <regex>
 
 using namespace std;
 
@@ -44,26 +43,6 @@ vector<string> tokenize(string commands)
     return commandList;
 }
 
-vector<string> tokenize2(const string& input) {
-    vector<string> tokens;
-    regex pattern("[\\w\\-]+"); 
-    smatch match;
-
-    auto start = input.cbegin();
-    auto end = input.cend();
-
-    while (regex_search(start, end, match, pattern)) {
-        tokens.push_back(match.str());
-        start = match.suffix().first;
-    }
-
-    if (tokens.empty()) {
-        throw invalid_argument("Invalid input: no valid tokens found.");
-    }
-
-    return tokens;
-}
-
 void add_history(string command)
 {
     if (history.size() >= MAX_HISTORY)
@@ -82,7 +61,7 @@ void display_history()
     }
 }
 
-void execute_command(const char *args[])
+void execute_command(char *args[])
 {
     pid_t pid = fork();
     if (pid == -1) // bad
@@ -150,14 +129,14 @@ void execute_parse(vector<string> commandList)
         else if (function == "|") // TODO: impelment pipe
         {                         // gives it the first command, ignores the function, then gives it the second command
             int pipefd[2];
-            executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str())
+            executePipe(pipefd, (char *)commandList[0].c_str(), (char *)commandList[2].c_str());
         }
     }
 }
 
 // handles redirected inputs
 // takes the command list, an optional input path, and optional output path
-void executeRedirect(const char *commandList[], string inPath = "", string outPath = "")
+void executeRedirect(char *commandList[], string inPath = "", string outPath = "")
 {
     // save original file descriptors
     int ogInfd = dup(0);
@@ -168,32 +147,32 @@ void executeRedirect(const char *commandList[], string inPath = "", string outPa
     // open input file
     if (inPath != "")
     {
-        inFd = open(inPath, fstream::in | fstream::app); // TODO: this is probably wrong
+        inFd = open(inPath, O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
     }
 
     // open output file
     if (outPath != "")
     {
-        outFd = open(outPath, fstream::out | fstream::app); // TODO: this is probably wrong
+        outFd = open(outPath, O_WRONLY | O_CREAT, 0666); // TODO: this is probably wrong
     }
 
     // change the file descriptors to the new in/out fd
-    if (inFd != nullptr)
+    if (inFd != NULL)
         dup2(inFd, 0);
-    if (outFd != nullptr)
+    if (outFd != NULL)
         dup2(outFd, 1);
 
     // execute command with new fd
-    execute_command(commandList);
+    execute_command((char *)commandList);
 
     // cleanup when done (after wait)
     fflush(stdout);
-    if (inFd != nullptr)
+    if (inFd != NULL)
     {
         dup2(ogInfd, 0);
         close(ogInfd);
     }
-    if (outFd != nullptr)
+    if (outFd != NULL)
     {
         dup2(ogOutfd, 1);
         close(ogOutfd);
@@ -270,7 +249,7 @@ int main()
         { // if no match run command with execvp
             // use vector to tokenize data
             vector<string> commandList;
-            commandList = tokenize2(command);
+            commandList = tokenize(command);
             // change to c string for execution
 
             execute_parse(commandList);
