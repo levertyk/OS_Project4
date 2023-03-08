@@ -204,18 +204,9 @@ int main()
         {
             break;
         }
-        else if (command == "pwd")
-        {
-        }
         else if (command == "history")
         {
             display_history();
-        }
-        else if (command.substr(0, 2) == "./")
-        {
-        }
-        else if (command.substr(0, 5) == "java ")
-        {
         }
         else
         { // if no match run command with execvp
